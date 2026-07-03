@@ -1,10 +1,33 @@
+using Microsoft.EntityFrameworkCore;
+using Amili.Myapp.Todo.Service.Core.Services;
+using Amili.Myapp.Todo.Service.Implementation.Data;
+using Amili.Myapp.Todo.Service.Implementation.Services;
+using Amili.Myapp.Todo.Service.Implementation.Mapping;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddControllers();
+
+// AutoMapper: scans MapperProfile for CreateMap<> rules and registers IMapper for DI.
+builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MapperProfile>());
+
+// EF Core: register TodoDbContext backed by PostgreSQL using the connection string.
+var connectionString = builder.Configuration.GetConnectionString("TodoDb");
+builder.Services.AddDbContext<TodoDbContext>(options => options.UseNpgsql(connectionString));
+
+// Constructor DI: whenever a controller asks for ITodoService, provide TodoService.
+builder.Services.AddScoped<ITodoService, TodoService>();
 
 var app = builder.Build();
+
+// Apply any pending EF Core migrations automatically on startup.
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<TodoDbContext>();
+    dbContext.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -13,29 +36,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.UseAuthorization();
+app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
