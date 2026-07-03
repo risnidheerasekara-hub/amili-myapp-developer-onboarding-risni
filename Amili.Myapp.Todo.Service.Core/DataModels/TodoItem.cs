@@ -1,4 +1,4 @@
-namespace Amili.MyApp.Todo.Service.Core.DataModels;
+namespace Amili.Myapp.Todo.Service.Core.DataModels;
 
 public class TodoItem
 {
