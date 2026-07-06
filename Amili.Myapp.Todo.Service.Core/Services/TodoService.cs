@@ -12,4 +12,7 @@ public interface ITodoService
     Task<TodoItemResponse?> GetTodoItemByIdAsync(long id);
 
     Task<TodoItemResponse[]> GetAllTodoItemsAsync();
+
+    Task<TodoItemResponse?> UpdateTodoItemAsync(long id, UpdateTodoItemRequest request);
+    Task<string?> DeleteTodoItemAsync(long id);
 }

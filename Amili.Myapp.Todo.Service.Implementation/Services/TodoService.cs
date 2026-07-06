@@ -38,4 +38,50 @@ public class TodoService(TodoDbContext dbcontext, IMapper mapper) : ITodoService
             .ToListAsync();
         return mapper.Map<TodoItemResponse[]>(todoItems);
     }
+
+    public async Task<TodoItemResponse?> UpdateTodoItemAsync(long id, UpdateTodoItemRequest request)
+    {
+        var todoItem = await dbcontext.TodoItems.FindAsync(id);
+        if (todoItem == null)
+        {
+            return null;
+        }
+
+        if (request.Name != null)
+        {
+            todoItem.Name = request.Name;
+        }
+        if (request.Description != null)
+        {
+            todoItem.Description = request.Description;
+        }
+        if (request.IsCompleted == true)
+        {
+            todoItem.IsCompleted = request.IsCompleted.Value;
+            todoItem.CompletedAt = DateTime.UtcNow;
+        }
+        if (request.IsCompleted == false)
+        {
+            todoItem.IsCompleted = request.IsCompleted.Value;
+            todoItem.CompletedAt = null;
+        }
+
+        await dbcontext.SaveChangesAsync();
+
+        return mapper.Map<TodoItemResponse>(todoItem);
+    }
+
+    public async Task<string?> DeleteTodoItemAsync(long id)
+    {
+        var todoItem = await dbcontext.TodoItems.FindAsync(id);
+        if (todoItem == null)
+        {
+            return null;
+        }
+
+        dbcontext.TodoItems.Remove(todoItem);
+        await dbcontext.SaveChangesAsync();
+
+        return $"Todo item with ID {id} has been deleted.";
+    }
 }
