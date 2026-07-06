@@ -4,6 +4,7 @@ using Amili.Myapp.Todo.Service.Core.Models.Request;
 using Amili.Myapp.Todo.Service.Core.Models.Response;
 using Amili.Myapp.Todo.Service.Core.Services;
 using Amili.Myapp.Todo.Service.Implementation.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Amili.Myapp.Todo.Service.Implementation.Services;
 
@@ -28,5 +29,13 @@ public class TodoService(TodoDbContext dbcontext, IMapper mapper) : ITodoService
             return null;
         }
         return mapper.Map<TodoItemResponse>(todoItem);
+    }
+
+    public async Task<TodoItemResponse[]> GetAllTodoItemsAsync()
+    {
+        var todoItems = await dbcontext.TodoItems
+            .OrderBy(t => t.CreatedAt)
+            .ToListAsync();
+        return mapper.Map<TodoItemResponse[]>(todoItems);
     }
 }

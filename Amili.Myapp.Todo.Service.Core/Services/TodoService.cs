@@ -10,4 +10,6 @@ public interface ITodoService
     Task<TodoItemResponse> CreateTodoItemAsync(CreateTodoItemRequest request);
 
     Task<TodoItemResponse?> GetTodoItemByIdAsync(long id);
+
+    Task<TodoItemResponse[]> GetAllTodoItemsAsync();
 }

@@ -31,4 +31,13 @@ public class TodoItemsController(ITodoService todoService) : ControllerBase
         }
         return Ok(response);
     }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<TodoItemResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult> GetAllTodoItems()
+    {
+        var response = await todoService.GetAllTodoItemsAsync();
+
+        return Ok(response);
+    }
 }
